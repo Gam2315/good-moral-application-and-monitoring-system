@@ -130,19 +130,17 @@ class ApplicationController extends Controller
 
     // Define valid semester options
     $validSemesters = [
-      'First Semester of 2023-2024',
-      'Second Semester of 2023-2024',
-      'Summer Term of 2023-2024',
-      'First Semester of 2024-2025',
-      'Second Semester of 2024-2025',
-      'Summer Term of 2024-2025'
+      'First Semester',
+      'Second Semester',
+      'Summer Term'
     ];
 
     // Validate additional fields if the student is undergraduate
     if ($accountType === 'student') {
       $request->validate([
         'last_course_year_level' => ['nullable', 'string', 'in:' . implode(',', $validCourses)],
-        'last_semester_sy' => ['required', 'string', 'in:' . implode(',', $validSemesters)],
+        'last_semester' => ['required', 'string', 'in:' . implode(',', $validSemesters)],
+        'last_school_year' => ['required', 'string', 'regex:/^\d{4}-\d{4}$/'],
       ]);
     } else if ($accountType === 'alumni') {
       $request->validate([
@@ -152,7 +150,8 @@ class ApplicationController extends Controller
     } else {
       $request->validate([
         'last_course_year_level' => ['nullable', 'string', 'in:' . implode(',', $validCourses)],
-        'last_semester_sy' => ['nullable', 'string', 'in:' . implode(',', $validSemesters)],
+        'last_semester' => ['nullable', 'string', 'in:' . implode(',', $validSemesters)],
+        'last_school_year' => ['nullable', 'string', 'regex:/^\d{4}-\d{4}$/'],
         'course_completed' => ['nullable', 'string', 'in:' . implode(',', $validCourses)],
         'graduation_date' => ['nullable', 'date'],
       ]);
@@ -186,6 +185,12 @@ class ApplicationController extends Controller
     // Get gender from user profile
     $userGender = Auth::user()->gender ?? 'male'; // Default to male if not set
 
+    // Combine semester and school year
+    $lastSemesterSy = null;
+    if ($request->last_semester && $request->last_school_year) {
+      $lastSemesterSy = $request->last_semester . ' of ' . $request->last_school_year;
+    }
+
     // Save the application in the database
     GoodMoralApplication::create([
       'number_of_copies' => $request->num_copies,
@@ -200,7 +205,7 @@ class ApplicationController extends Controller
       'application_status' => null,
       'is_undergraduate' => $request->is_undergraduate === 'yes',
       'last_course_year_level' => $request->last_course_year_level ?? null,
-      'last_semester_sy' => $request->last_semester_sy ?? null,
+      'last_semester_sy' => $lastSemesterSy,
       'certificate_type' => $request->certificate_type, // Add certificate type
       'status' => 'pending',
     ]);
@@ -209,7 +214,7 @@ class ApplicationController extends Controller
       'number_of_copies' => $request->num_copies,
       'reference_number' => $referenceNumber,
       'fullname' => $fullname,
-      'gender' => $request->gender, // Add gender field
+      'gender' => $userGender, // Add gender field
       'reason' => $selectedReason,
       'student_id' => $studentId,
       'department' => $studentDepartment,
@@ -218,7 +223,7 @@ class ApplicationController extends Controller
       'application_status' => null,
       'is_undergraduate' => $request->is_undergraduate === 'yes',
       'last_course_year_level' => $request->last_course_year_level ?? null,
-      'last_semester_sy' => $request->last_semester_sy ?? null,
+      'last_semester_sy' => $lastSemesterSy,
       'certificate_type' => $request->certificate_type, // Add certificate type
       'status' => '0',
     ]);

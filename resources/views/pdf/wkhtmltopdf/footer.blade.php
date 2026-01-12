@@ -7,29 +7,42 @@
             margin: 0;
             padding: 0;
             font-family: 'Times New Roman', serif;
-            background: white;
-        }
-        
-        .footer-container {
-            width: 100%;
             text-align: center;
-            padding: 10px 0;
-            background: white;
         }
         
         .two-tone-line {
             width: 100%;
-            height: 4px;
-            background: linear-gradient(to right, #FFD700 0%, #FFD700 50%, #0066CC 50%, #0066CC 100%);
-            margin: 5px 0;
+            height: 10px;
+            background: white;
+            position: relative;
+            margin-bottom: 5px;
         }
         
-        .footer-image {
+        .two-tone-line::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 3px;
+            background: #FFFF00;
+        }
+        
+        .two-tone-line::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 3px;
+            background: #00B050;
+        }
+        
+        img {
             width: 100%;
             height: auto;
             display: block;
-            margin-bottom: 50px;
-            object-fit: contain;
+            max-height: 60px;
         }
     </style>
 </head>
@@ -37,10 +50,7 @@
     @php
         $footer = base64_encode(file_get_contents(public_path('images/footer.png')));
     @endphp
-    
-    <div class="footer-container">
-        <div class="two-tone-line"></div>
-        <img src="data:image/png;base64,{{ $footer }}" alt="Footer" class="footer-image" />
-    </div>
+    <div class="two-tone-line"></div>
+    <img src="data:image/png;base64,{{ $footer }}" alt="Footer" />
 </body>
 </html>
